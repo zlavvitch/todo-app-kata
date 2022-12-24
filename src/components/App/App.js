@@ -1,5 +1,4 @@
 import { Component } from "react";
-import { formatDistanceToNow } from "date-fns";
 
 import NewTaskFrom from "../NewTaskFrom";
 import TaskList from "../TaskList";
@@ -109,9 +108,6 @@ export default class App extends Component {
     }));
   };
 
-  // eslint-disable-next-line class-methods-use-this
-  timeCheck = (date) => formatDistanceToNow(date, { includeSeconds: true });
-
   render() {
     const { data, filter } = this.state;
     const active = data.filter((item) => !item.checked).length;
@@ -127,7 +123,6 @@ export default class App extends Component {
             onEditItem={this.onEditItem}
             onEdit={this.onEdit}
             onToggleChecked={this.onToggleChecked}
-            timeCheck={this.timeCheck}
           />
           <Footer
             active={active}

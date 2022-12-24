@@ -1,5 +1,6 @@
 import { Component } from "react";
 import PropTypes from "prop-types";
+import { formatDistance } from "date-fns";
 
 import "./Task.css";
 
@@ -7,9 +8,18 @@ class Task extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      currentDate: new Date(),
       // eslint-disable-next-line react/destructuring-assignment
       value: this.props.value,
     };
+  }
+
+  componentDidMount() {
+    this.interval = setInterval(() => this.timer(), 5000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
   }
 
   onSubmit = (e) => {
@@ -29,14 +39,28 @@ class Task extends Component {
     });
   };
 
+  // eslint-disable-next-line class-methods-use-this
+  timeCheck = () => {
+    const { date } = this.props;
+    const { currentDate } = this.state;
+
+    return formatDistance(date, currentDate, { includeSeconds: true });
+  };
+
+  timer() {
+    this.setState({
+      currentDate: new Date(),
+    });
+  }
+
   render() {
     const {
       checked,
       editing,
+
       onDelete,
       onEditItem,
       onToggleChecked,
-      timeCheck,
     } = this.props;
 
     const { value } = this.state;
@@ -56,7 +80,7 @@ class Task extends Component {
           <input className="toggle" type="checkbox" onClick={onToggleChecked} />
           <label>
             <span className="description">{value}</span>
-            <span className="created">{`created ${timeCheck}`}</span>
+            <span className="created">{`created ${this.timeCheck()} ago`}</span>
           </label>
           <button
             type="button"
@@ -85,7 +109,6 @@ class Task extends Component {
 }
 
 Task.propTypes = {
-  timeCheck: PropTypes.string.isRequired,
   onDelete: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
   onEditItem: PropTypes.func.isRequired,

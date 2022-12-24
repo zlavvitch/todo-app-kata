@@ -4,23 +4,15 @@ import Task from "../Task";
 
 import "./TaskList.css";
 
-function TaskList({
-  data,
-  onDelete,
-  onEdit,
-  onEditItem,
-  onToggleChecked,
-  timeCheck,
-}) {
+function TaskList({ data, onDelete, onEdit, onEditItem, onToggleChecked }) {
   const elements = data.map((item) => {
-    const { id, date, ...itemProps } = item;
+    const { id, ...itemProps } = item;
 
     return (
       <Task
         key={id}
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...itemProps}
-        timeCheck={timeCheck(date)}
         onDelete={() => onDelete(id)}
         onEdit={onEdit(id)}
         onEditItem={() => onEditItem(id)}
@@ -43,7 +35,6 @@ function TaskList({
     onEditItem: PropTypes.func.isRequired,
     onEdit: PropTypes.func.isRequired,
     onToggleChecked: PropTypes.func.isRequired,
-    timeCheck: PropTypes.func.isRequired,
   };
 
   return <ul className="todo-list">{elements}</ul>;
