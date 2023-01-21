@@ -2,6 +2,8 @@ import { Component } from "react";
 import PropTypes from "prop-types";
 import { formatDistance } from "date-fns";
 
+import Timer from "../Timer";
+
 import "./Task.css";
 
 class Task extends Component {
@@ -9,37 +11,39 @@ class Task extends Component {
     super(props);
     this.state = {
       currentDate: new Date(),
-      // eslint-disable-next-line react/destructuring-assignment
-      value: this.props.value,
     };
   }
 
   componentDidMount() {
-    this.interval = setInterval(() => this.timer(), 5000);
+    this.interval = setInterval(() => this.handleDateChange(), 10000);
   }
 
   componentWillUnmount() {
     clearInterval(this.interval);
   }
 
+  handleDateChange() {
+    this.setState({
+      currentDate: new Date(),
+    });
+  }
+
   onSubmit = (e) => {
-    const { value } = this.state;
-    const { onEdit } = this.props;
+    const { taskValue, onEdit } = this.props;
 
     e.preventDefault();
 
-    if (value.trim() !== "") {
-      onEdit(value);
+    if (taskValue.trim() !== "") {
+      onEdit(taskValue);
     }
   };
 
-  onValueChange = (e) => {
-    this.setState({
-      value: e.target.value,
-    });
+  handleChange = (e) => {
+    const { handleInputChange } = this.props;
+
+    handleInputChange(e.target.value);
   };
 
-  // eslint-disable-next-line class-methods-use-this
   timeCheck = () => {
     const { date } = this.props;
     const { currentDate } = this.state;
@@ -47,23 +51,29 @@ class Task extends Component {
     return formatDistance(date, currentDate, { includeSeconds: true });
   };
 
-  timer() {
-    this.setState({
-      currentDate: new Date(),
-    });
-  }
+  onOnkeyEsc = (e) => {
+    const { taskValue, onEdit } = this.props;
+
+    if (e.keyCode === 27) {
+      onEdit(taskValue);
+    }
+  };
 
   render() {
     const {
       checked,
       editing,
-
       onDelete,
-      onEditItem,
+      onEdit,
       onToggleChecked,
+      taskValue,
+      minValue,
+      secValue,
+      handleTimerChange,
+      setPaused,
+      setPlay,
+      paused,
     } = this.props;
-
-    const { value } = this.state;
 
     let className;
     if (checked) {
@@ -79,13 +89,21 @@ class Task extends Component {
         <div className="view">
           <input className="toggle" type="checkbox" onClick={onToggleChecked} />
           <label>
-            <span className="description">{value}</span>
-            <span className="created">{`created ${this.timeCheck()} ago`}</span>
+            <span className="title">{taskValue}</span>
+            <Timer
+              minValue={minValue}
+              secValue={secValue}
+              paused={paused}
+              handleTimerChange={handleTimerChange}
+              setPaused={setPaused}
+              setPlay={setPlay}
+            />
+            <span className="description">{`created ${this.timeCheck()} ago`}</span>
           </label>
           <button
             type="button"
             className="icon icon-edit"
-            onClick={onEditItem}
+            onClick={onEdit}
             aria-label="Edit"
           />
           <button
@@ -99,8 +117,9 @@ class Task extends Component {
           <input
             type="text"
             className="edit"
-            defaultValue={value}
-            onChange={this.onValueChange}
+            value={taskValue}
+            onChange={this.handleChange}
+            onKeyDown={this.onOnkeyEsc}
           />
         </form>
       </li>
@@ -109,10 +128,19 @@ class Task extends Component {
 }
 
 Task.propTypes = {
+  checked: PropTypes.bool.isRequired,
+  editing: PropTypes.bool.isRequired,
   onDelete: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
-  onEditItem: PropTypes.func.isRequired,
   onToggleChecked: PropTypes.func.isRequired,
+  taskValue: PropTypes.string.isRequired,
+  minValue: PropTypes.number.isRequired,
+  secValue: PropTypes.number.isRequired,
+  handleTimerChange: PropTypes.func.isRequired,
+  handleInputChange: PropTypes.func.isRequired,
+  setPaused: PropTypes.func.isRequired,
+  setPlay: PropTypes.func.isRequired,
+  paused: PropTypes.bool.isRequired,
 };
 
 export default Task;

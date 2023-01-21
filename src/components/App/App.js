@@ -3,6 +3,7 @@ import { Component } from "react";
 import NewTaskFrom from "../NewTaskFrom";
 import TaskList from "../TaskList";
 import Footer from "../Footer";
+import OutsideClickHandler from "../OutsideClickHandler";
 
 import "./App.css";
 
@@ -12,26 +13,57 @@ export default class App extends Component {
     this.state = {
       data: [
         {
-          value: "Drink Coffe",
+          taskValue: "Drink Coffee",
           id: 100,
           checked: false,
           editing: false,
+          paused: false,
+          finished: false,
           date: new Date(),
+          minValue: 0,
+          secValue: 20,
+        },
+        {
+          taskValue: "Sleep",
+          id: 101,
+          checked: false,
+          editing: false,
+          paused: false,
+          finished: false,
+          date: new Date(),
+          minValue: 59,
+          secValue: 59,
+        },
+        {
+          taskValue: "Eat",
+          id: 103,
+          checked: false,
+          editing: false,
+          paused: false,
+          finished: false,
+          date: new Date(),
+          minValue: 10,
+          secValue: 0,
         },
       ],
-      filter: "",
+
+      filterName: "",
     };
 
     this.maxId = 1;
   }
 
-  addItem = (value) => {
+  addItem = (taskValue, minValue, secValue) => {
     const newItem = {
-      value,
+      taskValue,
       checked: false,
       editing: false,
+      paused: false,
+      finished: false,
       id: this.maxId++,
       date: new Date(),
+      minValue,
+      secValue,
     };
 
     this.setState(({ data }) => {
@@ -43,16 +75,50 @@ export default class App extends Component {
     });
   };
 
-  onEdit = (id) => (value) =>
+  handleInputChange = (id) => (taskValue) => {
     this.setState(({ data }) => ({
       data: data.map((item) => {
         if (item.id === id) {
-          return { ...item, value, editing: !item.editing };
+          return { ...item, taskValue };
         }
 
         return item;
       }),
     }));
+  };
+
+  handleTimerChange = (id) => (time) => {
+    this.setState(({ data }) => ({
+      data: data.map((item) => {
+        if (item.id === id) {
+          if (time.length > 1) {
+            const [min, sec] = time;
+            return { ...item, secValue: sec, minValue: min };
+          }
+
+          return { ...item, secValue: time };
+        }
+
+        return item;
+      }),
+    }));
+  };
+
+  mapMethodId = (name, id) => {
+    this.setState(({ data }) => ({
+      data: data.map((item) => {
+        if (item.id === id) {
+          return { ...item, [name]: !item[name] };
+        }
+
+        return item;
+      }),
+    }));
+  };
+
+  onEdit = (id) => {
+    this.mapMethodId("editing", id);
+  };
 
   deleteItem = (id) => {
     this.setState(({ data }) => ({
@@ -61,32 +127,12 @@ export default class App extends Component {
   };
 
   onToggleChecked = (id) => {
-    this.setState(({ data }) => ({
-      data: data.map((item) => {
-        if (item.id === id) {
-          return { ...item, checked: !item.checked };
-        }
-
-        return item;
-      }),
-    }));
-  };
-
-  onEditItem = (id) => {
-    this.setState(({ data }) => ({
-      data: data.map((item) => {
-        if (item.id === id) {
-          return { ...item, editing: !item.editing };
-        }
-
-        return item;
-      }),
-    }));
+    this.mapMethodId("checked", id);
   };
 
   // eslint-disable-next-line class-methods-use-this
-  filterTask = (items, filter) => {
-    switch (filter) {
+  filterTask = (items, filterName) => {
+    switch (filterName) {
       case "active":
         return items.filter((item) => !item.checked);
 
@@ -98,8 +144,8 @@ export default class App extends Component {
     }
   };
 
-  onFilterSelect = (filter) => {
-    this.setState({ filter });
+  onFilterSelect = (filterName) => {
+    this.setState({ filterName });
   };
 
   onFilterComplited = () => {
@@ -108,29 +154,77 @@ export default class App extends Component {
     }));
   };
 
+  mapMethodTimer = (name, id, bool) => {
+    this.setState(({ data }) => ({
+      data: data.map((item) => {
+        if (item.id === id) {
+          return { ...item, [name]: bool };
+        }
+        return item;
+      }),
+    }));
+  };
+
+  setPaused = (id) => {
+    this.mapMethodTimer("paused", id, true);
+  };
+
+  setPlay = (id) => {
+    this.mapMethodTimer("paused", id, false);
+  };
+
+  mapMethodEvent = () => {
+    this.setState(({ data }) => ({
+      data: data.map((item) => {
+        if (item.editing) {
+          return { ...item, editing: !item.editing };
+        }
+
+        return item;
+      }),
+    }));
+  };
+
+  onOutsideClick = () => {
+    this.mapMethodEvent();
+  };
+
+  onOnkeyEsc = () => {
+    this.mapMethodEvent();
+  };
+
   render() {
-    const { data, filter } = this.state;
+    const { data, filterName } = this.state;
+
     const active = data.filter((item) => !item.checked).length;
-    const visibleData = this.filterTask(data, filter);
+    const visibleData = this.filterTask(data, filterName);
 
     return (
       <section className="todoapp">
-        <NewTaskFrom onAdd={this.addItem} />
-        <section className="main">
-          <TaskList
-            data={visibleData}
-            onDelete={this.deleteItem}
-            onEditItem={this.onEditItem}
-            onEdit={this.onEdit}
-            onToggleChecked={this.onToggleChecked}
-          />
-          <Footer
-            active={active}
-            filter={filter}
-            onFilterSelect={this.onFilterSelect}
-            onFilterComplited={this.onFilterComplited}
-          />
-        </section>
+        <OutsideClickHandler
+          onOutsideClick={() => this.onOutsideClick()}
+          onOnkeyEsc={() => this.onOnkeyEsc()}
+        >
+          <NewTaskFrom onAdd={this.addItem} />
+          <section className="main">
+            <TaskList
+              data={visibleData}
+              onDelete={this.deleteItem}
+              onEdit={this.onEdit}
+              onToggleChecked={this.onToggleChecked}
+              handleInputChange={this.handleInputChange}
+              handleTimerChange={this.handleTimerChange}
+              setPaused={this.setPaused}
+              setPlay={this.setPlay}
+            />
+            <Footer
+              active={active}
+              filterName={filterName}
+              onFilterSelect={this.onFilterSelect}
+              onFilterComplited={this.onFilterComplited}
+            />
+          </section>
+        </OutsideClickHandler>
       </section>
     );
   }

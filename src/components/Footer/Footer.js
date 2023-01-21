@@ -4,11 +4,11 @@ import TaskFilter from "../TaskFilter";
 
 import "./Footer.css";
 
-function Footer({ active, filter, onFilterSelect, onFilterComplited }) {
+function Footer({ active, filterName, onFilterSelect, onFilterComplited }) {
   return (
     <footer className="footer">
       <span className="todo-count">{active} items left</span>
-      <TaskFilter filter={filter} onFilterSelect={onFilterSelect} />
+      <TaskFilter filterName={filterName} onFilterSelect={onFilterSelect} />
       <button
         type="button"
         className="clear-completed"
@@ -21,11 +21,11 @@ function Footer({ active, filter, onFilterSelect, onFilterComplited }) {
 }
 
 Footer.defaultProps = {
-  filter: "all",
+  filterName: "all",
 };
 
 Footer.propTypes = {
-  filter: PropTypes.string,
+  filterName: PropTypes.string,
   onFilterSelect: PropTypes.func.isRequired,
   onFilterComplited: PropTypes.func.isRequired,
 };

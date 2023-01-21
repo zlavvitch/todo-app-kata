@@ -4,7 +4,16 @@ import Task from "../Task";
 
 import "./TaskList.css";
 
-function TaskList({ data, onDelete, onEdit, onEditItem, onToggleChecked }) {
+function TaskList({
+  data,
+  onDelete,
+  onEdit,
+  onToggleChecked,
+  handleInputChange,
+  handleTimerChange,
+  setPaused,
+  setPlay,
+}) {
   const elements = data.map((item) => {
     const { id, ...itemProps } = item;
 
@@ -14,9 +23,12 @@ function TaskList({ data, onDelete, onEdit, onEditItem, onToggleChecked }) {
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...itemProps}
         onDelete={() => onDelete(id)}
-        onEdit={onEdit(id)}
-        onEditItem={() => onEditItem(id)}
+        onEdit={() => onEdit(id)}
         onToggleChecked={() => onToggleChecked(id)}
+        handleInputChange={handleInputChange(id)}
+        handleTimerChange={handleTimerChange(id)}
+        setPaused={() => setPaused(id)}
+        setPlay={() => setPlay(id)}
       />
     );
   });
@@ -24,20 +36,24 @@ function TaskList({ data, onDelete, onEdit, onEditItem, onToggleChecked }) {
   TaskList.propTypes = {
     data: PropTypes.arrayOf(
       PropTypes.shape({
-        value: PropTypes.string.isRequired,
+        taskValue: PropTypes.string.isRequired,
         id: PropTypes.number.isRequired,
         checked: PropTypes.bool.isRequired,
         editing: PropTypes.bool.isRequired,
         date: PropTypes.instanceOf(Date).isRequired,
+        minValue: PropTypes.number.isRequired,
+        secValue: PropTypes.number.isRequired,
+        paused: PropTypes.bool.isRequired,
       })
     ).isRequired,
     onDelete: PropTypes.func.isRequired,
-    onEditItem: PropTypes.func.isRequired,
     onEdit: PropTypes.func.isRequired,
     onToggleChecked: PropTypes.func.isRequired,
+    handleTimerChange: PropTypes.func.isRequired,
+    handleInputChange: PropTypes.func.isRequired,
   };
 
-  return <ul className="todo-list">{elements}</ul>;
+  return <ul className="todo-list">{elements} </ul>;
 }
 
 export default TaskList;

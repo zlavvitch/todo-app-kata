@@ -8,44 +8,85 @@ class NewTaskFrom extends Component {
     super(props);
 
     this.state = {
-      value: "",
+      taskValue: "",
+      minValue: "",
+      secValue: "",
     };
   }
 
   onValueChange = (e) => {
+    const targetName = e.target.name;
+    const regex = /^0*(?:[0-5][0-9]?|59)$/;
+    let value;
+
+    if (targetName === "taskValue" && e.target.value.trim() !== "") {
+      value = e.target.value;
+    } else if (regex.test(e.target.value, 10)) {
+      value = parseInt(e.target.value, 10);
+    } else {
+      value = "";
+    }
+
     this.setState({
-      value: e.target.value,
+      [targetName]: value,
     });
   };
 
   onSubmit = (e) => {
     const { onAdd } = this.props;
-    const { value } = this.state;
+    const { taskValue, minValue, secValue } = this.state;
 
     e.preventDefault();
 
-    if (value.trim() !== "") {
-      onAdd(value);
+    if (
+      taskValue &&
+      (minValue || minValue === 0) &&
+      (secValue || secValue === 0)
+    ) {
+      onAdd(taskValue, minValue, secValue);
+    } else {
+      return;
     }
 
     this.setState({
-      value: "",
+      taskValue: "",
+      minValue: "",
+      secValue: "",
     });
   };
 
   render() {
-    const { value } = this.state;
+    const { taskValue, minValue, secValue } = this.state;
 
     return (
       <header className="header">
         <h1>todos</h1>
-        <form onSubmit={this.onSubmit}>
+        <form className="new-todo-form" onSubmit={this.onSubmit}>
           <input
+            name="taskValue"
             className="new-todo"
-            placeholder="What needs to be done?"
-            value={value}
+            placeholder="Task"
+            value={taskValue}
             onChange={this.onValueChange}
+            autoComplete="off"
           />
+          <input
+            name="minValue"
+            className="new-todo-form__timer"
+            placeholder="Min"
+            value={minValue}
+            onChange={this.onValueChange}
+            autoComplete="off"
+          />
+          <input
+            name="secValue"
+            className="new-todo-form__timer"
+            placeholder="Sec"
+            value={secValue}
+            onChange={this.onValueChange}
+            autoComplete="off"
+          />
+          <input type="submit" className="new-todo-form__submit" />
         </form>
       </header>
     );
