@@ -86,7 +86,7 @@ class NewTaskFrom extends Component {
             onChange={this.onValueChange}
             autoComplete="off"
           />
-          <input type="submit" className="new-todo-form__submit" />
+          <input type="submit" className="new-todo-form__submit" hidden />
         </form>
       </header>
     );
