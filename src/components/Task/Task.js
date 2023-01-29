@@ -29,12 +29,12 @@ class Task extends Component {
   }
 
   onSubmit = (e) => {
-    const { taskValue, onEdit } = this.props;
+    const { task, onEdit } = this.props;
 
     e.preventDefault();
 
-    if (taskValue.trim() !== "") {
-      onEdit(taskValue);
+    if (task.value.trim() !== "") {
+      onEdit(task.value);
     }
   };
 
@@ -45,40 +45,28 @@ class Task extends Component {
   };
 
   timeCheck = () => {
-    const { date } = this.props;
+    const { task } = this.props;
     const { currentDate } = this.state;
 
-    return formatDistance(date, currentDate, { includeSeconds: true });
+    return formatDistance(task.date, currentDate, { includeSeconds: true });
   };
 
-  onOnkeyEsc = (e) => {
-    const { taskValue, onEdit } = this.props;
+  onEscapeKey = (e) => {
+    const { task, onEdit } = this.props;
 
     if (e.keyCode === 27) {
-      onEdit(taskValue);
+      onEdit(task.value);
     }
   };
 
   render() {
-    const {
-      checked,
-      editing,
-      onDelete,
-      onEdit,
-      onToggleChecked,
-      taskValue,
-      minValue,
-      secValue,
-      handleTimerChange,
-      setPaused,
-      setPlay,
-      paused,
-    } = this.props;
+    const { task, onDelete, onEdit, onToggleChecked, setPaused, setPlay } =
+      this.props;
 
     let className;
-    if (checked) {
+    if (task.checked) {
       className = "completed";
-    } else if (editing) {
+    } else if (task.editing) {
       className = "editing";
     } else {
       className = "";
@@ -89,15 +77,8 @@ class Task extends Component {
         <div className="view">
           <input className="toggle" type="checkbox" onClick={onToggleChecked} />
           <label>
-            <span className="title">{taskValue}</span>
-            <Timer
-              minValue={minValue}
-              secValue={secValue}
-              paused={paused}
-              handleTimerChange={handleTimerChange}
-              setPaused={setPaused}
-              setPlay={setPlay}
-            />
+            <span className="title">{task.value}</span>
+            <Timer sec={task.sec} setPaused={setPaused} setPlay={setPlay} />
             <span className="description">{`created ${this.timeCheck()} ago`}</span>
           </label>
           <button
@@ -117,9 +98,9 @@ class Task extends Component {
           <input
             type="text"
             className="edit"
-            value={taskValue}
+            value={task.value}
             onChange={this.handleChange}
-            onKeyDown={this.onOnkeyEsc}
+            onKeyDown={this.onEscapeKey}
           />
         </form>
       </li>
@@ -128,19 +109,20 @@ class Task extends Component {
 }
 
 Task.propTypes = {
-  checked: PropTypes.bool.isRequired,
-  editing: PropTypes.bool.isRequired,
+  task: PropTypes.shape({
+    id: PropTypes.number,
+    value: PropTypes.string,
+    cheked: PropTypes.bool,
+    editing: PropTypes.bool,
+    sec: PropTypes.number,
+    date: PropTypes.instanceOf(Date),
+  }).isRequired,
   onDelete: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
   onToggleChecked: PropTypes.func.isRequired,
-  taskValue: PropTypes.string.isRequired,
-  minValue: PropTypes.number.isRequired,
-  secValue: PropTypes.number.isRequired,
-  handleTimerChange: PropTypes.func.isRequired,
   handleInputChange: PropTypes.func.isRequired,
   setPaused: PropTypes.func.isRequired,
   setPlay: PropTypes.func.isRequired,
-  paused: PropTypes.bool.isRequired,
 };
 
 export default Task;

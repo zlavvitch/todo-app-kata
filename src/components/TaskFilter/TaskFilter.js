@@ -4,6 +4,7 @@ import "./TaskFilter.css";
 
 function TaskFilter({ filterName, onFilterSelect }) {
   let maxId = 1;
+
   const buttonsData = [
     { name: "all", label: "All" },
     { name: "active", label: "Active" },

@@ -8,81 +8,78 @@ class NewTaskFrom extends Component {
     super(props);
 
     this.state = {
-      taskValue: "",
-      minValue: "",
-      secValue: "",
+      task: "",
+      min: "",
+      sec: "",
     };
   }
 
   onValueChange = (e) => {
     const targetName = e.target.name;
     const regex = /^0*(?:[0-5][0-9]?|59)$/;
-    let value;
+    let inputValue;
 
-    if (targetName === "taskValue" && e.target.value.trim() !== "") {
-      value = e.target.value;
+    if (targetName === "task" && e.target.value.trim() !== "") {
+      inputValue = e.target.value;
     } else if (regex.test(e.target.value, 10)) {
-      value = parseInt(e.target.value, 10);
+      inputValue = parseInt(e.target.value, 10);
     } else {
-      value = "";
+      inputValue = "";
     }
 
     this.setState({
-      [targetName]: value,
+      [targetName]: inputValue,
     });
   };
 
   onSubmit = (e) => {
-    const { onAdd } = this.props;
-    const { taskValue, minValue, secValue } = this.state;
+    const { addTask } = this.props;
+    const { task, sec, min } = this.state;
 
     e.preventDefault();
 
-    if (
-      taskValue &&
-      (minValue || minValue === 0) &&
-      (secValue || secValue === 0)
-    ) {
-      onAdd(taskValue, minValue, secValue);
+    if (task && (min || min === 0) && (sec || sec === 0)) {
+      const seconds = Math.floor(min * 60 + sec);
+      addTask(task, seconds);
     } else {
       return;
     }
 
     this.setState({
-      taskValue: "",
-      minValue: "",
-      secValue: "",
+      task: "",
+      min: "",
+      sec: "",
     });
   };
 
   render() {
-    const { taskValue, minValue, secValue } = this.state;
+    const { task, min, sec } = this.state;
 
     return (
       <header className="header">
         <h1>todos</h1>
         <form className="new-todo-form" onSubmit={this.onSubmit}>
           <input
-            name="taskValue"
+            name="task"
             className="new-todo"
             placeholder="Task"
-            value={taskValue}
+            value={task}
             onChange={this.onValueChange}
             autoComplete="off"
           />
           <input
-            name="minValue"
+            name="min"
             className="new-todo-form__timer"
             placeholder="Min"
-            value={minValue}
+            value={min}
             onChange={this.onValueChange}
             autoComplete="off"
           />
           <input
-            name="secValue"
+            name="sec"
             className="new-todo-form__timer"
             placeholder="Sec"
-            value={secValue}
+            value={sec}
             onChange={this.onValueChange}
             autoComplete="off"
           />
@@ -94,7 +91,7 @@ class NewTaskFrom extends Component {
 }
 
 NewTaskFrom.propTypes = {
-  onAdd: PropTypes.func.isRequired,
+  addTask: PropTypes.func.isRequired,
 };
 
 export default NewTaskFrom;

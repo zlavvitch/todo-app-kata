@@ -1,91 +1,39 @@
-import { Component } from "react";
 import PropTypes from "prop-types";
 
 import "./Timer.css";
 
-class Timer extends Component {
-  componentDidMount() {
-    this.interval = setInterval(() => this.tick(), 1000);
-  }
+function Timer({ sec, setPlay, setPaused }) {
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time - minutes * 60);
 
-  componentDidUpdate(prevProps) {
-    const { paused } = this.props;
-
-    if (prevProps.paused === true && paused === false) {
-      this.interval = setInterval(() => this.tick(), 1000);
-    }
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.interval);
-  }
-
-  tick = () => {
-    const { minValue, secValue, paused, handleTimerChange } = this.props;
-
-    let min;
-    let sec;
-
-    if (paused) {
-      clearInterval(this.interval);
-      return;
-    }
-
-    if (minValue === 0 && secValue === 0) {
-      clearInterval(this.interval);
-    } else if (secValue === 0) {
-      sec = 59;
-      min = minValue - 1;
-
-      handleTimerChange([min, sec]);
-    } else {
-      sec = secValue - 1;
-
-      handleTimerChange(sec);
-    }
+    return [
+      minutes.toString().padStart(2, "0"),
+      seconds.toString().padStart(2, "0"),
+    ].join(":");
   };
 
-  render() {
-    const { secValue, minValue, setPaused, setPlay } = this.props;
-
-    let min;
-    let sec;
-
-    if (minValue < 10) {
-      min = `0${minValue}`;
-    } else {
-      min = minValue;
-    }
-
-    if (secValue < 10) {
-      sec = `0${secValue}`;
-    } else {
-      sec = secValue;
-    }
-
-    return (
-      <span className="description">
-        <button
-          className="icon icon-play"
-          type="button"
-          aria-label="Play"
-          onClick={setPlay}
-        />
-        <button
-          className="icon icon-pause"
-          type="button"
-          aria-label="Pause"
-          onClick={setPaused}
-        />
-        {min}:{sec}
-      </span>
-    );
-  }
+  return (
+    <span className="description">
+      <button
+        className="icon icon-play"
+        type="button"
+        aria-label="Play"
+        onClick={setPlay}
+      />
+      <button
+        className="icon icon-pause"
+        type="button"
+        aria-label="Pause"
+        onClick={setPaused}
+      />
+      {formatTime(sec)}
+    </span>
+  );
 }
 
 Timer.propTypes = {
-  minValue: PropTypes.number.isRequired,
-  secValue: PropTypes.number.isRequired,
+  sec: PropTypes.number.isRequired,
   setPaused: PropTypes.func.isRequired,
   setPlay: PropTypes.func.isRequired,
 };

@@ -5,55 +5,49 @@ import Task from "../Task";
 import "./TaskList.css";
 
 function TaskList({
-  data,
+  tasks,
   onDelete,
   onEdit,
   onToggleChecked,
   handleInputChange,
-  handleTimerChange,
   setPaused,
   setPlay,
 }) {
-  const elements = data.map((item) => {
-    const { id, ...itemProps } = item;
+  const keys = Object.keys(tasks);
 
-    return (
-      <Task
-        key={id}
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...itemProps}
-        onDelete={() => onDelete(id)}
-        onEdit={() => onEdit(id)}
-        onToggleChecked={() => onToggleChecked(id)}
-        handleInputChange={handleInputChange(id)}
-        handleTimerChange={handleTimerChange(id)}
-        setPaused={() => setPaused(id)}
-        setPlay={() => setPlay(id)}
-      />
-    );
-  });
-
-  TaskList.propTypes = {
-    data: PropTypes.arrayOf(
-      PropTypes.shape({
-        taskValue: PropTypes.string.isRequired,
-        id: PropTypes.number.isRequired,
-        checked: PropTypes.bool.isRequired,
-        editing: PropTypes.bool.isRequired,
-        date: PropTypes.instanceOf(Date).isRequired,
-        minValue: PropTypes.number.isRequired,
-        secValue: PropTypes.number.isRequired,
-        paused: PropTypes.bool.isRequired,
-      })
-    ).isRequired,
-    onDelete: PropTypes.func.isRequired,
-    onEdit: PropTypes.func.isRequired,
-    onToggleChecked: PropTypes.func.isRequired,
-    handleTimerChange: PropTypes.func.isRequired,
-    handleInputChange: PropTypes.func.isRequired,
-  };
+  const elements = keys.map((key) => (
+    <Task
+      key={key}
+      task={tasks[key]}
+      onDelete={() => onDelete(key)}
+      onEdit={() => onEdit(key)}
+      onToggleChecked={() => onToggleChecked(key)}
+      handleInputChange={handleInputChange(key)}
+      setPaused={() => setPaused(key)}
+      setPlay={() => setPlay(key)}
+    />
+  ));
 
   return <ul className="todo-list">{elements} </ul>;
 }
+
+TaskList.propTypes = {
+  tasks: PropTypes.shape({
+    task: PropTypes.shape({
+      id: PropTypes.number,
+      value: PropTypes.string,
+      cheked: PropTypes.bool,
+      editing: PropTypes.bool,
+      sec: PropTypes.number,
+      date: PropTypes.instanceOf(Date),
+    }),
+  }).isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onToggleChecked: PropTypes.func.isRequired,
+  handleInputChange: PropTypes.func.isRequired,
+  setPaused: PropTypes.func.isRequired,
+  setPlay: PropTypes.func.isRequired,
+};
 
 export default TaskList;

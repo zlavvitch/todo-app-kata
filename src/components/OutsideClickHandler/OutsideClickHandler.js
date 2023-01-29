@@ -5,41 +5,39 @@ class OutsideClickHandler extends Component {
 
   // eslint-disable-next-line react/static-property-placement
   static defaultProps = {
-    onOutsideClick: () => {},
-    onOnkeyEsc: () => {},
+    outsideClick: () => {},
+    onkeyEsc: () => {},
   };
 
   componentDidMount() {
-    document.addEventListener("mousedown", this.handleClickOutside);
-    document.addEventListener("keydown", this.handleOnkeyEsc);
+    document.addEventListener("mousedown", this.handleEventClick);
+    document.addEventListener("keydown", this.handleEventOnkey);
   }
 
   componentWillUnmount() {
-    document.removeEventListener("mousedown", this.handleClickOutside);
-    document.removeEventListener("keydown", this.handleOnkeyEsc);
+    document.removeEventListener("mousedown", this.handleEventClick);
+    document.removeEventListener("keydown", this.handleEventOnkey);
   }
 
-  handleClickOutside = (event) => {
-    const { onOutsideClick } = this.props;
+  handleEventClick = (event) => {
+    const { outsideClick } = this.props;
 
     if (
       this.wrapperRef.current &&
       !this.wrapperRef.current.contains(event.target)
-    ) {
-      onOutsideClick();
-    }
+    )
+      outsideClick();
   };
 
-  handleOnkeyEsc = (event) => {
-    const { onOnkeyEsc } = this.props;
+  handleEventOnkey = (event) => {
+    const { onkeyEsc } = this.props;
 
     if (
       this.wrapperRef.current &&
       !this.wrapperRef.current.contains(event.target) &&
       event.keyCode === 27
-    ) {
-      onOnkeyEsc();
-    }
+    )
+      onkeyEsc();
   };
 
   render() {
