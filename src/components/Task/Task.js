@@ -1,4 +1,4 @@
-import { Component } from "react";
+import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { formatDistance } from "date-fns";
 
@@ -12,10 +12,18 @@ class Task extends Component {
     this.state = {
       currentDate: new Date(),
     };
+    this.textInput = React.createRef();
   }
 
   componentDidMount() {
     this.interval = setInterval(() => this.handleDateChange(), 10000);
+  }
+
+  componentDidUpdate(preProps) {
+    const { task } = this.props;
+    if (preProps.task.editing === false && task.editing === true) {
+      this.focusTextInput();
+    }
   }
 
   componentWillUnmount() {
@@ -57,6 +65,10 @@ class Task extends Component {
     if (e.keyCode === 27) {
       onEdit(task.value);
     }
+  };
+
+  focusTextInput = () => {
+    this.textInput.current.focus();
   };
 
   render() {
@@ -101,6 +113,7 @@ class Task extends Component {
             value={task.value}
             onChange={this.handleChange}
             onKeyDown={this.onEscapeKey}
+            ref={this.textInput}
           />
         </form>
       </li>

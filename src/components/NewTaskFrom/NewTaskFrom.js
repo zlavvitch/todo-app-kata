@@ -1,4 +1,4 @@
-import { Component } from "react";
+import React, { Component } from "react";
 import PropTypes from "prop-types";
 
 import "./NewTaskFrom.css";
@@ -12,6 +12,12 @@ class NewTaskFrom extends Component {
       min: "",
       sec: "",
     };
+
+    this.textInput = React.createRef();
+  }
+
+  componentDidMount() {
+    this.textInput.current.focus();
   }
 
   onValueChange = (e) => {
@@ -65,6 +71,7 @@ class NewTaskFrom extends Component {
             placeholder="Task"
             value={task}
             onChange={this.onValueChange}
+            ref={this.textInput}
             autoComplete="off"
           />
           <input
@@ -83,7 +90,7 @@ class NewTaskFrom extends Component {
             onChange={this.onValueChange}
             autoComplete="off"
           />
-          <input type="submit" className="new-todo-form__submit" hidden />
+          <input type="submit" className="new-todo-form__submit" />
         </form>
       </header>
     );
