@@ -1,50 +1,38 @@
-import { Component, createRef } from "react";
+import { useRef, useEffect } from "react";
 
-class OutsideClickHandler extends Component {
-  wrapperRef = createRef();
+function OutsideClickHandler({ children, outsideClick, onkeyEsc }) {
+  const wrapperRef = useRef();
 
-  // eslint-disable-next-line react/static-property-placement
-  static defaultProps = {
-    outsideClick: () => {},
-    onkeyEsc: () => {},
-  };
-
-  componentDidMount() {
-    document.addEventListener("mousedown", this.handleEventClick);
-    document.addEventListener("keydown", this.handleEventOnkey);
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener("mousedown", this.handleEventClick);
-    document.removeEventListener("keydown", this.handleEventOnkey);
-  }
-
-  handleEventClick = (event) => {
-    const { outsideClick } = this.props;
-
-    if (
-      this.wrapperRef.current &&
-      !this.wrapperRef.current.contains(event.target)
-    )
+  const handleEventClick = (event) => {
+    if (wrapperRef.current && !wrapperRef.current.contains(event.target))
       outsideClick();
   };
 
-  handleEventOnkey = (event) => {
-    const { onkeyEsc } = this.props;
-
+  const handleEventOnkey = (event) => {
     if (
-      this.wrapperRef.current &&
-      !this.wrapperRef.current.contains(event.target) &&
+      wrapperRef.current &&
+      !wrapperRef.current.contains(event.target) &&
       event.keyCode === 27
     )
       onkeyEsc();
   };
 
-  render() {
-    const { children } = this.props;
+  useEffect(() => {
+    document.addEventListener("mousedown", handleEventClick);
+    document.addEventListener("keydown", handleEventOnkey);
 
-    return <div ref={this.wrapperRef}>{children}</div>;
-  }
+    return () => {
+      document.removeEventListener("mousedown", handleEventClick);
+      document.removeEventListener("keydown", handleEventOnkey);
+    };
+  });
+
+  return <div ref={wrapperRef}>{children}</div>;
 }
+
+OutsideClickHandler.defaultProps = {
+  outsideClick: () => {},
+  onkeyEsc: () => {},
+};
 
 export default OutsideClickHandler;

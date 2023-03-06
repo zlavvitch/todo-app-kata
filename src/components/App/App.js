@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { useState, useRef, useEffect } from "react";
 
 import NewTaskFrom from "../NewTaskFrom";
 import TaskList from "../TaskList";
@@ -7,50 +7,46 @@ import OutsideClickHandler from "../OutsideClickHandler";
 
 import "./App.css";
 
-export default class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      tasks: {
-        100: {
-          id: 100,
-          value: "Drink Coffee",
-          checked: false,
-          editing: false,
-          sec: 0,
-          date: new Date(),
-        },
-        101: {
-          id: 101,
-          value: "Sleep",
-          checked: false,
-          editing: false,
-          date: new Date(),
-          sec: 0,
-        },
-        102: {
-          id: 102,
-          value: "Eat",
-          checked: false,
-          editing: false,
-          date: new Date(),
-          sec: 0,
-        },
-      },
-      timerMap: {
-        100: "",
-        101: "",
-        102: "",
-      },
-      filterName: "",
-    };
+function App() {
+  const [tasks, setTasks] = useState({
+    100: {
+      id: 100,
+      value: "Drink Coffee",
+      checked: false,
+      editing: false,
+      sec: 0,
+      date: new Date(),
+    },
+  });
 
-    this.maxId = 103;
-  }
+  const [filterName, setFilterName] = useState("");
+  const timersIdRef = useRef({ 100: "" });
+  const idRef = useRef(101);
 
-  addTask = (value, sec) => {
+  useEffect(() => {
+    Object.values(tasks).forEach((task) => {
+      if (task.sec === 0 && !!timersIdRef.current[task.id]) {
+        clearInterval(timersIdRef.current[task.id]);
+        timersIdRef.current = { ...timersIdRef.current, [task.id]: "" };
+      }
+    });
+  }, [tasks]);
+
+  const handleTimerChange = (id) => {
+    setTasks((tasks) => ({
+      ...tasks,
+      [id]: { ...tasks[id], sec: tasks[id].sec - 1 },
+    }));
+  };
+
+  const handlerStartTimer = (id) => {
+    const timerId = setInterval(() => handleTimerChange(id), 1000);
+    timersIdRef.current = { ...timersIdRef.current, [id]: timerId };
+  };
+
+  const addTask = (value, sec) => {
     const newTask = {
-      id: this.maxId++,
+      id: idRef.current,
       value,
       sec,
       checked: false,
@@ -58,73 +54,37 @@ export default class App extends Component {
       date: new Date(),
     };
 
-    const timerStart = (id) => this.handlerStartTimer(id);
+    idRef.current += 1;
 
-    this.setState(({ tasks }, { timerMap }) => ({
-      tasks: { ...tasks, [newTask.id]: newTask },
-      timerMap: {
-        ...timerMap,
-        [newTask.id]: timerStart(newTask.id),
-      },
+    setTasks((tasks) => ({ ...tasks, [newTask.id]: newTask }));
+
+    handlerStartTimer(newTask.id);
+  };
+
+  const handleInputChange = (id, value) => {
+    setTasks((tasks) => ({ ...tasks, [id]: { ...tasks[id], value } }));
+  };
+
+  const setPaused = (id) => {
+    clearInterval(timersIdRef.current[id]);
+    timersIdRef.current = { ...timersIdRef.current, [id]: "" };
+  };
+
+  const setPlay = (id) => {
+    if (!tasks[id].sec) return;
+    if (timersIdRef.current[id]) return;
+
+    handlerStartTimer(id);
+  };
+
+  const onEdit = (id) => {
+    setTasks((tasks) => ({
+      ...tasks,
+      [id]: { ...tasks[id], editing: !tasks[id].editing },
     }));
   };
 
-  handleInputChange = (id) => (value) => {
-    this.setState(({ tasks }) => ({
-      tasks: { ...tasks, [id]: { ...tasks[id], value } },
-    }));
-  };
-
-  handlerStartTimer = (id) => {
-    this.timerId = setInterval(() => this.handleTimerChange(id), 1000);
-
-    return this.timerId;
-  };
-
-  handleTimerChange = (id) => {
-    const { timerMap } = this.state;
-    const { tasks } = this.state;
-    const finished = tasks[id].sec === 0;
-
-    if (finished) {
-      clearInterval(timerMap[id]);
-      this.setState({ timerMap: { ...timerMap, [id]: "" } });
-      return;
-    }
-
-    this.setState({
-      tasks: { ...tasks, [id]: { ...tasks[id], sec: tasks[id].sec - 1 } },
-    });
-  };
-
-  setPaused = (id) => {
-    const { timerMap } = this.state;
-
-    clearInterval(timerMap[id]);
-    this.setState({ timerMap: { ...timerMap, [id]: "" } });
-  };
-
-  setPlay = (id) => {
-    const { timerMap } = this.state;
-
-    if (timerMap[id]) return;
-
-    const timerStart = this.handlerStartTimer(id);
-    this.setState({ timerMap: { ...timerMap, [id]: timerStart } });
-  };
-
-  onEdit = (id) => {
-    this.setState(({ tasks }) => ({
-      tasks: {
-        ...tasks,
-        [id]: { ...tasks[id], editing: !tasks[id].editing },
-      },
-    }));
-  };
-
-  onDeleteItem = (id) => {
-    const { tasks, timerMap } = this.state;
-
+  const onDeleteItem = (id) => {
     const newTasks = Object.keys(tasks).reduce((acc, key) => {
       if (key !== id) {
         acc[key] = tasks[key];
@@ -133,28 +93,20 @@ export default class App extends Component {
       return acc;
     }, {});
 
-    const newTimers = Object.keys(timerMap).reduce((acc, key) => {
-      if (key !== id) {
-        acc[key] = timerMap[key];
-      }
+    clearInterval(timersIdRef.current[id]);
+    delete timersIdRef.current[id];
 
-      return acc;
-    }, {});
-
-    this.setState({ tasks: newTasks, timerMap: newTimers });
+    setTasks(newTasks);
   };
 
-  onToggleChecked = (id) => {
-    this.setState(({ tasks }) => ({
-      tasks: {
-        ...tasks,
-        [id]: { ...tasks[id], checked: !tasks[id].checked },
-      },
+  const onToggleChecked = (id) => {
+    setTasks((tasks) => ({
+      ...tasks,
+      [id]: { ...tasks[id], checked: !tasks[id].checked },
     }));
   };
 
-  // eslint-disable-next-line class-methods-use-this
-  filterObject = (tasksList, bool) =>
+  const filterObject = (tasksList, bool) =>
     Object.entries(tasksList).reduce((acc, task) => {
       const [key, value] = task;
       const { checked } = value;
@@ -165,25 +117,21 @@ export default class App extends Component {
       return acc;
     }, {});
 
-  filterTask = (filterName) => {
-    const { tasks } = this.state;
-
-    switch (filterName) {
+  const filterTask = (filter) => {
+    switch (filter) {
       case "active":
-        return this.filterObject(tasks, false);
+        return filterObject(tasks, false);
 
       case "complite":
-        return this.filterObject(tasks, true);
+        return filterObject(tasks, true);
 
       default:
         return tasks;
     }
   };
 
-  countTasks = () => {
-    const { tasks } = this.state;
-
-    return Object.entries(tasks).reduce((acc, task) => {
+  const countTasks = () =>
+    Object.entries(tasks).reduce((acc, task) => {
       const [, value] = task;
       const { checked } = value;
       if (!checked) {
@@ -192,22 +140,25 @@ export default class App extends Component {
 
       return acc;
     }, 0);
+
+  const onFilterSelect = (filter) => {
+    setFilterName(filter);
   };
 
-  onFilterSelect = (filterName) => {
-    this.setState({ filterName });
+  const onFilterComplited = () => {
+    const activeTasks = filterObject(tasks, false);
+    const checkedTasks = Object.values(tasks).filter((task) => task.checked);
+    const checkedTasksIds = checkedTasks.map((task) => `${task.id}`);
+
+    checkedTasksIds.forEach((timerId) => {
+      clearInterval(timersIdRef.current[timerId]);
+      delete timersIdRef.current[timerId];
+    });
+
+    setTasks(activeTasks);
   };
 
-  onFilterComplited = () => {
-    const { tasks } = this.state;
-    const activeTasks = this.filterObject(tasks, false);
-
-    this.setState({ tasks: activeTasks });
-  };
-
-  outsideClick = () => {
-    const { tasks } = this.state;
-
+  const outsideClick = () => {
     const newEditedTasks = Object.entries(tasks).reduce((acc, task) => {
       const [key, value] = task;
       const { editing } = value;
@@ -221,12 +172,10 @@ export default class App extends Component {
       return acc;
     }, {});
 
-    this.setState({ tasks: newEditedTasks });
+    setTasks(newEditedTasks);
   };
 
-  onkeyEsc = () => {
-    const { tasks } = this.state;
-
+  const onkeyEsc = () => {
     const newEditedTasks = Object.entries(tasks).reduce((acc, task) => {
       const [key, value] = task;
       const { editing } = value;
@@ -240,40 +189,39 @@ export default class App extends Component {
       return acc;
     }, {});
 
-    this.setState({ tasks: newEditedTasks });
+    setTasks(newEditedTasks);
   };
 
-  render() {
-    const { tasks, filterName } = this.state;
-    const active = this.countTasks(tasks);
-    const visibleTasks = this.filterTask(filterName);
+  const active = countTasks(tasks);
+  const visibleTasks = filterTask(filterName);
 
-    return (
-      <section className="todoapp">
-        <OutsideClickHandler
-          outsideClick={() => this.outsideClick()}
-          onkeyEsc={() => this.onkeyEsc()}
-        >
-          <NewTaskFrom addTask={this.addTask} />
-          <section className="main">
-            <TaskList
-              tasks={visibleTasks}
-              onDelete={this.onDeleteItem}
-              onEdit={this.onEdit}
-              onToggleChecked={this.onToggleChecked}
-              handleInputChange={this.handleInputChange}
-              setPaused={this.setPaused}
-              setPlay={this.setPlay}
-            />
-            <Footer
-              active={active}
-              filterName={filterName}
-              onFilterSelect={this.onFilterSelect}
-              onFilterComplited={this.onFilterComplited}
-            />
-          </section>
-        </OutsideClickHandler>
-      </section>
-    );
-  }
+  return (
+    <section className="todoapp">
+      <OutsideClickHandler
+        outsideClick={() => outsideClick()}
+        onkeyEsc={() => onkeyEsc()}
+      >
+        <NewTaskFrom addTask={addTask} />
+        <section className="main">
+          <TaskList
+            tasks={visibleTasks}
+            onDelete={onDeleteItem}
+            onEdit={onEdit}
+            onToggleChecked={onToggleChecked}
+            handleInputChange={handleInputChange}
+            setPaused={setPaused}
+            setPlay={setPlay}
+          />
+          <Footer
+            active={active}
+            filterName={filterName}
+            onFilterSelect={onFilterSelect}
+            onFilterComplited={onFilterComplited}
+          />
+        </section>
+      </OutsideClickHandler>
+    </section>
+  );
 }
+
+export default App;

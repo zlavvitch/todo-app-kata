@@ -1,28 +1,22 @@
-import React, { Component } from "react";
+import { useState, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 
 import "./NewTaskFrom.css";
 
-class NewTaskFrom extends Component {
-  constructor(props) {
-    super(props);
+function NewTaskFrom({ addTask }) {
+  const [task, setTask] = useState("");
+  const [min, setMin] = useState("");
+  const [sec, setSec] = useState("");
 
-    this.state = {
-      task: "",
-      min: "",
-      sec: "",
-    };
+  const textInputRef = useRef();
 
-    this.textInput = React.createRef();
-  }
+  useEffect(() => {
+    textInputRef.current.focus();
+  }, [textInputRef]);
 
-  componentDidMount() {
-    this.textInput.current.focus();
-  }
-
-  onValueChange = (e) => {
+  const onValueChange = (e) => {
     const targetName = e.target.name;
-    const regex = /^0*(?:[0-5][0-9]?|59)$/;
+    const regex = /^\d+$/;
     let inputValue;
 
     if (targetName === "task" && e.target.value.trim() !== "") {
@@ -33,15 +27,19 @@ class NewTaskFrom extends Component {
       inputValue = "";
     }
 
-    this.setState({
-      [targetName]: inputValue,
-    });
+    switch (targetName) {
+      case "task":
+        return setTask(inputValue);
+
+      case "min":
+        return setMin(inputValue);
+
+      default:
+        return setSec(inputValue);
+    }
   };
 
-  onSubmit = (e) => {
-    const { addTask } = this.props;
-    const { task, sec, min } = this.state;
-
+  const onSubmit = (e) => {
     e.preventDefault();
 
     if (task && (min || min === 0) && (sec || sec === 0)) {
@@ -51,50 +49,44 @@ class NewTaskFrom extends Component {
       return;
     }
 
-    this.setState({
-      task: "",
-      min: "",
-      sec: "",
-    });
+    setTask("");
+    setMin("");
+    setSec("");
   };
 
-  render() {
-    const { task, min, sec } = this.state;
-
-    return (
-      <header className="header">
-        <h1>todos</h1>
-        <form className="new-todo-form" onSubmit={this.onSubmit}>
-          <input
-            name="task"
-            className="new-todo"
-            placeholder="Task"
-            value={task}
-            onChange={this.onValueChange}
-            ref={this.textInput}
-            autoComplete="off"
-          />
-          <input
-            name="min"
-            className="new-todo-form__timer"
-            placeholder="Min"
-            value={min}
-            onChange={this.onValueChange}
-            autoComplete="off"
-          />
-          <input
-            name="sec"
-            className="new-todo-form__timer"
-            placeholder="Sec"
-            value={sec}
-            onChange={this.onValueChange}
-            autoComplete="off"
-          />
-          <input type="submit" className="new-todo-form__submit" />
-        </form>
-      </header>
-    );
-  }
+  return (
+    <header className="header">
+      <h1>todos</h1>
+      <form className="new-todo-form" onSubmit={onSubmit}>
+        <input
+          name="task"
+          className="new-todo"
+          placeholder="Task"
+          value={task}
+          onChange={onValueChange}
+          ref={textInputRef}
+          autoComplete="off"
+        />
+        <input
+          name="min"
+          className="new-todo-form__timer"
+          placeholder="Min"
+          value={min}
+          onChange={onValueChange}
+          autoComplete="off"
+        />
+        <input
+          name="sec"
+          className="new-todo-form__timer"
+          placeholder="Sec"
+          value={sec}
+          onChange={onValueChange}
+          autoComplete="off"
+        />
+        <input type="submit" className="new-todo-form__submit" />
+      </form>
+    </header>
+  );
 }
 
 NewTaskFrom.propTypes = {

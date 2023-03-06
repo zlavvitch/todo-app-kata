@@ -22,7 +22,7 @@ function TaskList({
       onDelete={() => onDelete(key)}
       onEdit={() => onEdit(key)}
       onToggleChecked={() => onToggleChecked(key)}
-      handleInputChange={handleInputChange(key)}
+      handleInputChange={handleInputChange}
       setPaused={() => setPaused(key)}
       setPlay={() => setPlay(key)}
     />
