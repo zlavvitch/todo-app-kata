@@ -1,3 +1,3 @@
 ## Todo App (Kata Academy)
 
-### [Demo](https://todo-timer-app-kata.vercel.app)
+### [Demo](https://todo-app-kata-hooks.vercel.app)
